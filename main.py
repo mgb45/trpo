@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+import os
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 import tensorflow as tf
 from env_mujoco import Mujoco
@@ -31,3 +34,4 @@ if __name__ == '__main__':
         sess.run(tf.local_variables_initializer())
         K.set_session(sess)
         trainer.train(session = sess)
+        trainer.local_brain.policy_mu_model.save('./logs/'+args.environ_string+'.h5')

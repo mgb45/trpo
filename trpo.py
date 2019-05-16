@@ -82,25 +82,25 @@ class TRPO(NeuralNetwork):
         val = Dense(units=1, activation=None, kernel_initializer=RandomNormal(0,0.1), kernel_regularizer=l2(0.01))(value_model)
 
         ''' policy models '''
-        policy_mu_model = Model(inputs=[mu_model_input], outputs=[mean])
-
+        self.policy_mu_model = Model(inputs=[mu_model_input], outputs=[mean])
+        self.policy_mu_model.compile(Adam(),'mse')
         ''' value model, updated using keras routine'''
         self.value_model = Model(inputs=[value_model_input], outputs=[val])
         adam_optimizer = Adam(lr=self.value_learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
         self.value_model.compile(loss='mean_squared_error', optimizer=adam_optimizer)
 
         ''' model outputs '''
-        self.mu = policy_mu_model(self.input_ph)
+        self.mu = self.policy_mu_model(self.input_ph)
         self.value = self.value_model(self.input_ph)
         self.sigma = tf.get_variable('sigma', (1, self.env_action_number),
                                      tf.float32,
                                      tf.constant_initializer(0.6))
 
         ''' trainable weights; defined here since no direct use required'''
-        self._mean_model_params = policy_mu_model.trainable_weights
+        self._mean_model_params = self.policy_mu_model.trainable_weights
         self._value_model_params = self.value_model.trainable_weights
 
-        policy_mu_model.summary()
+        self.policy_mu_model.summary()
         self.value_model.summary()
 
         return self
